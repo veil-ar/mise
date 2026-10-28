@@ -24,15 +24,15 @@ a,button{touch-action:manipulation}
 :root{
   /* Layout: one centred column. Library rows split by hairlines; a recipe splits into ingredients | method on wide screens. */
   --bg:#EDF1EB; --surface:#F7F9F5; --ink:#14302A; --muted:#566B63; --line:#CFD8CE; --chip:#E0E8DE;
-  --accent:#E8A91A; --on-accent:#1B1405; --danger:#B03A2E;
+  --accent:#E8A91A; --on-accent:#1B1405; --danger:#B03A2E; --good:#2B7A55; --warn:#8F6200;
   --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
   --body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){--bg:#0D1714;--surface:#14231F;--ink:#E6EFE8;--muted:#8FA79C;--line:#25362F;--chip:#1C2D27;--accent:#F0B93A;--on-accent:#1B1405;--danger:#EC7B6F;color-scheme:dark}
+  :root:not([data-theme="light"]){--bg:#0D1714;--surface:#14231F;--ink:#E6EFE8;--muted:#8FA79C;--line:#25362F;--chip:#1C2D27;--accent:#F0B93A;--on-accent:#1B1405;--danger:#EC7B6F;--good:#6CCB9B;--warn:#F0B93A;color-scheme:dark}
 }
-:root[data-theme="dark"]{--bg:#0D1714;--surface:#14231F;--ink:#E6EFE8;--muted:#8FA79C;--line:#25362F;--chip:#1C2D27;--accent:#F0B93A;--on-accent:#1B1405;--danger:#EC7B6F;color-scheme:dark}
+:root[data-theme="dark"]{--bg:#0D1714;--surface:#14231F;--ink:#E6EFE8;--muted:#8FA79C;--line:#25362F;--chip:#1C2D27;--accent:#F0B93A;--on-accent:#1B1405;--danger:#EC7B6F;--good:#6CCB9B;--warn:#F0B93A;color-scheme:dark}
 
 *,*::before,*::after{box-sizing:border-box}
 html,body{min-height:100%}
@@ -45,7 +45,7 @@ a{color:inherit}
 button,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0 0;flex-wrap:wrap;row-gap:2px;border-bottom:1px solid var(--line)}
 .mark{display:flex;align-items:baseline;gap:12px;text-decoration:none;min-width:0}
 .mark b{font:700 1.75rem/1 var(--display);letter-spacing:-.03em}
 .count{font:500 .72rem var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
@@ -112,10 +112,10 @@ h1{font-size:clamp(2rem,6.5vw,3.1rem);line-height:1.04;letter-spacing:-.035em;fo
 .ings{list-style:none;margin:0;padding:0}
 .ings li{border-bottom:1px dashed var(--line)}
 .ings li:last-child{border-bottom:0}
-.ing{display:grid;grid-template-columns:auto 5.6rem minmax(0,1fr);gap:10px;align-items:baseline;min-height:44px;padding:9px 0;cursor:pointer}
+.ing{display:grid;grid-template-columns:auto 5.6rem minmax(0,1fr) auto;gap:10px;align-items:baseline;min-height:44px;padding:9px 0;cursor:pointer}
 .ing input{accent-color:var(--accent);width:18px;height:18px;margin:0;align-self:center}
 .q{font:500 .85rem var(--mono);font-variant-numeric:tabular-nums}
-.t.wide{grid-column:2/-1}
+.t.wide{grid-column:2/4}
 .ing.on .q,.ing.on .t{color:var(--muted);text-decoration:line-through}
 .ings li.gh{font:600 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 0 4px;border-bottom:0}
 .steps{counter-reset:s;list-style:none;margin:0;padding:0;display:grid;gap:20px}
@@ -150,6 +150,43 @@ form{max-width:640px}
 .cook-nav{display:grid;grid-template-columns:1fr 2fr;gap:12px}
 .cook-nav .btn{min-height:56px;font-size:1.05rem}
 .toast{position:fixed;left:50%;translate:-50% 0;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;max-width:calc(100% - 32px)}
+.tabs{flex-basis:100%;display:flex;gap:26px}
+.tabs a{padding:10px 0 9px;margin-bottom:-1px;text-decoration:none;color:var(--muted);font-weight:500;border-bottom:2px solid transparent}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current="page"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
+
+.pill{display:inline-block;font:500 .68rem/1.4 var(--mono);letter-spacing:.05em;text-transform:uppercase;padding:1px 7px;border-radius:4px;border:1px solid currentColor;white-space:nowrap}
+.pill.bad{color:var(--danger)}
+.pill.warn{color:var(--warn)}
+.pill.good{color:var(--good)}
+.pill.mute{color:var(--muted)}
+.st{align-self:center;font:500 .68rem var(--mono);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.st.ok{color:var(--good)}
+.st.short,.st.expired{color:var(--danger)}
+.st.unk{color:var(--warn)}
+.st.none{color:var(--muted)}
+
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.duo>*{min-width:0}
+.f[type="date"]{min-height:48px;appearance:none;-webkit-appearance:none}
+select.f{min-height:48px}
+.pform{margin:18px 0 8px;max-width:640px;padding-bottom:6px}
+.sumline{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:16px 0 0}
+.plist{list-style:none;margin:8px 0 0;padding:0}
+.pi{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}
+.pi b{font:700 1.1rem/1.25 var(--display);letter-spacing:-.01em;margin-right:8px;overflow-wrap:anywhere}
+.pi-top{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}
+.pi .meta{margin-top:4px}
+.pi-act{display:flex;gap:8px}
+.pick{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--line);min-height:52px}
+.pick label{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;min-width:0}
+.pick input{accent-color:var(--accent);width:20px;height:20px;margin:0;flex:none}
+.pick span{font-weight:600;overflow-wrap:anywhere}
+.sv{display:flex;align-items:center;gap:6px}
+.need{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:baseline;padding:12px 0;border-bottom:1px dashed var(--line)}
+.need b{font-weight:600;overflow-wrap:anywhere}
+.need .meta{grid-column:1/-1}
+.sec{margin:30px 0 4px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 </style>
 </head>
 <body>
@@ -157,6 +194,7 @@ form{max-width:640px}
   <header class="top">
     <a class="mark" href="#" aria-label="Mise, all recipes"><b>Mise</b><span class="count" id="count"></span></a>
     <a class="btn primary" id="addbtn" href="#add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add recipe</a>
+    <nav class="tabs" aria-label="Sections"><a href="#" data-tab="list">Recipes</a><a href="#pantry" data-tab="pantry">Pantry</a><a href="#plan" data-tab="plan">Plan</a></nav>
   </header>
   <main>
     <section class="view" id="v-list">
@@ -171,6 +209,29 @@ form{max-width:640px}
     <section class="view" id="v-detail" hidden></section>
     <section class="view" id="v-edit" hidden></section>
     <section class="view" id="v-backup" hidden></section>
+    <section class="view" id="v-pantry" hidden>
+      <h1>Pantry</h1>
+      <p class="desc">What you have in, with the date you bought it. Items near their use-by date rise to the top.</p>
+      <p class="ok" id="pantry-summary" style="margin-top:12px"></p>
+      <form class="panel pform" id="pform" novalidate>
+        <label class="field"><span>Item</span><input class="f" id="p-name" type="text" autocomplete="off" placeholder="Chicken thighs"></label>
+        <div class="duo">
+          <label class="field"><span>Amount</span><input class="f" id="p-qty" type="number" inputmode="decimal" step="any" min="0" placeholder="Optional"></label>
+          <label class="field"><span>Unit</span><select class="f" id="p-unit">
+            <option value="">Pieces</option><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option>
+            <option value="tsp">tsp</option><option value="tbsp">tbsp</option><option value="cup">cup</option><option value="oz">oz</option><option value="lb">lb</option>
+          </select></label>
+        </div>
+        <div class="duo">
+          <label class="field"><span>Bought</span><input class="f" id="p-bought" type="date"></label>
+          <label class="field"><span>Use by (optional)</span><input class="f" id="p-useby" type="date"></label>
+        </div>
+        <p class="err" id="p-err" role="alert" hidden></p>
+        <div class="actions" style="margin:0"><button class="btn primary" type="submit" id="p-save">Add to pantry</button><button class="btn" type="button" id="p-cancel" hidden>Cancel</button></div>
+      </form>
+      <div id="pantry-list"></div>
+    </section>
+    <section class="view" id="v-plan" hidden></section>
   </main>
   <p class="foot" id="foot"></p>
 </div>
@@ -326,6 +387,143 @@ function toText(r, servings){
   if (r.notes) out.push('', 'Notes', r.notes);
   return out.join('\n');
 }
+/* ---- pantry, stock matching, dates, planning ---- */
+const UNITS = {g:['mass',1], kg:['mass',1000], mg:['mass',.001], oz:['mass',28.35], lb:['mass',453.6], lbs:['mass',453.6],
+  ml:['vol',1], l:['vol',1000], litre:['vol',1000], litres:['vol',1000], liter:['vol',1000], liters:['vol',1000],
+  tsp:['vol',5], tbsp:['vol',15], cup:['vol',240], cups:['vol',240], pint:['vol',568], pints:['vol',568]};
+function unitInfo(u){ const x = UNITS[String(u || '').toLowerCase()]; return x ? {fam:x[0], f:x[1]} : null; }
+const STOP = new Set(('a an of the and or with to taste fresh freshly large small medium big ripe whole finely roughly chopped diced sliced minced crushed grated peeled ' +
+  'boneless skinless skin on bone in dried ground cooked raw frozen extra virgin good quality handful pinch bunch pack packet tin can clove sprig slice stalk head stick piece knob optional plus more for serving serve').split(' '));
+const COUNTER = /\b(cloves?|sprigs?|slices?|stalks?|heads?|bunch(?:es)?|handfuls?|pinch(?:es)?|cans?|tins?|packs?|packets?|sticks?|pieces?|knobs?)\b/i;
+
+function singular(t){
+  if (t.length > 4 && t.endsWith('ies')) return t.slice(0, -3) + 'y';
+  if (t.length > 4 && /(oes|ches|shes|sses|xes)$/.test(t)) return t.slice(0, -2);
+  if (t.length > 3 && t.endsWith('s') && !t.endsWith('ss') && !t.endsWith('us')) return t.slice(0, -1);
+  return t;
+}
+function nameTokens(s){
+  return String(s || '').toLowerCase().replace(/[^\p{L}\s]/gu, ' ').split(/\s+/).map(singular)
+    .filter((t, i, a) => t && !STOP.has(t) && a.indexOf(t) === i);
+}
+function matchTokens(a, b){
+  if (!a.length || !b.length) return false;
+  return b.every(t => a.includes(t)) || a.every(t => b.includes(t));
+}
+function parseIng(line){
+  const m = String(line).match(LEAD);
+  let qty = null, unit = '', rest = String(line).trim();
+  if (m) {
+    const a = toNum(m[2]);
+    if (a !== null) {
+      const b = m[3] ? toNum(m[3]) : null;
+      qty = b !== null ? Math.max(a, b) : a;
+      unit = (m[4] || '').toLowerCase();
+      rest = String(line).slice(m[0].length).trim();
+    }
+  }
+  const name = rest.replace(/\([^)]*\)/g, ' ').split(/,| - | – /)[0].trim();
+  const tokens = nameTokens(name), u = unitInfo(unit);
+  return {qty, unit, fam:u ? u.fam : 'count', base:qty == null ? null : qty * (u ? u.f : 1), name, tokens, key:tokens.join(' '), counter:COUNTER.test(name)};
+}
+function fmtAmount(base, fam, unit){
+  if (base == null) return '';
+  if (fam === 'count') return fmtQty(base);
+  const u = unitInfo(unit);
+  let f = u ? u.f : 1, un = u ? String(unit).toLowerCase() : (fam === 'mass' ? 'g' : 'ml');
+  if (un === 'g' && base >= 1000) { f = 1000; un = 'kg'; } else if (un === 'ml' && base >= 1000) { f = 1000; un = 'l'; }
+  return fmtQty(base / f) + ' ' + un;
+}
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function todayStr(d){ d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function dayNum(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || '')); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) / 86400000 : null; }
+function daysBetween(a, b){ const x = dayNum(a), y = dayNum(b); return x == null || y == null ? null : Math.round(y - x); }
+function fmtDate(s){ const n = dayNum(s); if (n == null) return ''; const d = new Date(n * 86400000); return DAYS[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()]; }
+function plural(n, w){ return n + ' ' + w + (n === 1 ? '' : 's'); }
+function ageText(bought, today){
+  const a = daysBetween(bought, today);
+  if (a == null) return '';
+  return a <= 0 ? 'Bought today' : 'Bought ' + fmtDate(bought) + ' (' + plural(a, 'day') + ' ago)';
+}
+function useByState(it, today){
+  if (!it.useBy) return null;
+  const d = daysBetween(today, it.useBy);
+  if (d == null) return null;
+  if (d < 0) return {k:'bad', text:'Past use-by'};
+  if (d === 0) return {k:'warn', text:'Use today'};
+  if (d <= 2) return {k:'warn', text:'Use within ' + plural(d, 'day')};
+  return {k:'mute', text:'Use by ' + fmtDate(it.useBy)};
+}
+function pantrySort(items, today){
+  const key = it => { const d = it.useBy ? daysBetween(today, it.useBy) : null; return d != null ? [0, d] : [1, -(daysBetween(it.bought, today) || 0)]; };
+  return items.slice().sort((a, b) => { const x = key(a), y = key(b); return x[0] - y[0] || x[1] - y[1] || String(a.name).localeCompare(String(b.name)); });
+}
+
+// Does the pantry cover this ingredient? p comes from parseIng (or an aggregated plan entry).
+function stockFor(p, needBase, pantry, today){
+  const items = pantry.filter(it => matchTokens(p.tokens, nameTokens(it.name)));
+  if (!items.length) return {st:'none', items:[]};
+  const live = items.filter(it => !(it.useBy && daysBetween(today, it.useBy) < 0));
+  if (!live.length) return {st:'expired', items};
+  if (needBase == null) return {st:'ok', items:live};
+  let have = 0, any = false, all = true;
+  live.forEach(it => {
+    const u = unitInfo(it.unit), fam = u ? u.fam : 'count';
+    if (it.qty != null && fam === p.fam && !(fam === 'count' && p.counter)) { have += it.qty * (u ? u.f : 1); any = true; } else all = false;
+  });
+  if (!any) return {st:'unk', items:live};
+  if (have + 1e-9 >= needBase) return {st:'ok', items:live, have};
+  return {st:all ? 'short' : 'unk', items:live, have, short:needBase - have};
+}
+function stockLabel(p, s){
+  if (s.st === 'ok') return {cls:'ok', text:s.have != null ? 'have ' + fmtAmount(s.have, p.fam, p.unit) : 'in stock'};
+  if (s.st === 'short') return {cls:'short', text:'short ' + fmtAmount(s.short, p.fam, p.unit)};
+  if (s.st === 'unk') return {cls:'unk', text:'have some'};
+  if (s.st === 'expired') return {cls:'expired', text:'past use-by'};
+  return {cls:'none', text:'none'};
+}
+function recipeStock(r, pantry, today){
+  let total = 0, have = 0;
+  (r.ingredients || []).forEach(line => {
+    if (String(line).startsWith('# ')) return;
+    const p = parseIng(line);
+    if (!p.key) return;
+    total++;
+    const s = stockFor(p, p.base, pantry, today);
+    if (s.st === 'ok' || s.st === 'unk') have++;
+  });
+  return {have, total};
+}
+// Adds up the ingredients of the chosen recipes. plan maps recipe id -> servings (or batches when a recipe has no serving count).
+function aggregatePlan(recipes, plan){
+  const map = new Map();
+  recipes.forEach(r => {
+    const s = plan[r.id];
+    if (!s) return;
+    const f = r.serves ? s / r.serves : s;
+    (r.ingredients || []).forEach(line => {
+      if (String(line).startsWith('# ')) return;
+      const p = parseIng(line);
+      if (!p.key) return;
+      const k = p.key + '|' + p.fam;
+      let e = map.get(k);
+      if (!e) { e = {key:p.key, tokens:p.tokens, name:p.name, fam:p.fam, unit:p.unit, counter:false, base:null, recipes:[]}; map.set(k, e); }
+      if (p.counter) e.counter = true;
+      if (p.base != null) e.base = (e.base || 0) + p.base * f;
+      if (!e.recipes.includes(r.title)) e.recipes.push(r.title);
+    });
+  });
+  return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+function planBuyLine(e){
+  const s = e.s;
+  let amt = '';
+  if (s.st === 'short') amt = fmtAmount(s.short, e.fam, e.unit);
+  else if (e.base != null) amt = fmtAmount(e.base, e.fam, e.unit);
+  return (amt ? amt + ' ' : '') + e.name;
+}
 /* LOGIC END */
 const $ = s => document.querySelector(s);
 const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.8L12 16.8 6.7 19.6l1.1-5.8L3.5 9.7l5.9-.8z"/></svg>';
@@ -333,14 +531,24 @@ const BACK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 
 const CLOSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const LS_KEY = 'mise.recipes.v1';
 const SEED_KEY = 'mise.seeded.v1';
+const PSEED_KEY = 'mise.pantry.seeded.v1';
 const EXAMPLES = [{"id":"kexshakshuka","title":"Shakshuka","description":"Eggs poached in a spiced tomato and pepper sauce. Good for breakfast or a quick dinner with bread.","serves":2,"prep":10,"cook":20,"tags":["breakfast","vegetarian","eggs"],"ingredients":["2 tbsp olive oil","1 onion, finely sliced","1 red pepper, diced","3 garlic cloves, crushed","1 tsp ground cumin","1 tsp smoked paprika","400 g tinned chopped tomatoes","4 eggs","Small handful of parsley, chopped","Salt and pepper"],"steps":["Heat the oil in a wide, deep frying pan over a medium heat. Cook the onion and pepper for 8 minutes until soft.","Stir in the garlic, cumin and paprika and cook for 1 minute.","Add the tomatoes and a pinch of salt. Simmer for 8 minutes until the sauce thickens.","Make four small wells in the sauce and crack an egg into each. Cover and cook for 4 to 6 minutes, until the whites are set and the yolks are still soft.","Scatter over the parsley and serve straight from the pan with bread."],"notes":"Crumble in some feta at the end if you like it salty."},{"id":"kexchickentray","title":"Lemon Garlic Chicken Traybake","description":"One tray, crisp skin and sticky lemon juices. Everything goes in the oven together.","serves":4,"prep":15,"cook":45,"tags":["dinner","traybake","chicken"],"ingredients":["8 chicken thighs, bone-in, skin on","500 g baby potatoes, halved","3 tbsp olive oil","1 lemon, juiced","4 garlic cloves, crushed","1 tsp dried oregano","# To finish","1 lemon, cut into wedges","Small handful of parsley, chopped","Salt and pepper"],"steps":["Heat the oven to 200°C (180°C fan).","Put the chicken and potatoes in a large roasting tray. Add the oil, lemon juice, garlic, oregano, 1 tsp salt and plenty of pepper, and toss well.","Arrange the chicken skin side up and roast for 45 minutes, turning the potatoes once, until the skin is golden and the juices run clear.","Scatter over the parsley, add the lemon wedges and spoon the pan juices over the top."],"notes":"Keeps for 3 days in the fridge. Reheat until piping hot."},{"id":"kexreddal","title":"Red Lentil Dal","description":"A thick, mild dal that costs very little and freezes well.","serves":4,"prep":10,"cook":30,"tags":["dinner","vegetarian","curry","batch-cook"],"ingredients":["250 g red lentils, rinsed","750 ml water","1 tsp ground turmeric","1 tsp salt","# For the tarka","2 tbsp oil or ghee","1 tsp cumin seeds","1 onion, finely chopped","3 garlic cloves, sliced","1 tsp garam masala","1 lemon, juiced"],"steps":["Put the lentils, water, turmeric and salt in a pan. Bring to the boil, then simmer for 20 minutes, stirring now and then, until the lentils break down.","While the lentils cook, heat the oil in a small pan. Fry the cumin seeds for 30 seconds, then add the onion and cook for 8 minutes until golden.","Add the garlic and garam masala and cook for 1 minute.","Stir the tarka into the dal, add the lemon juice and taste for salt. Serve with rice or flatbread."],"notes":"Add a splash of water when reheating, it thickens as it sits."}];
-const state = {recipes:[], ready:false, mode:'local', q:'', filter:'all', servingsFor:null, servings:0, checked:new Set(), done:new Set(), confirmDel:false, editKey:null, cook:null};
+const state = {recipes:[], pantry:[], plan:{}, planBuy:[], pantryEdit:null, pantryDel:null, ready:false, mode:'local', q:'', filter:'all', servingsFor:null, servings:0, checked:new Set(), done:new Set(), confirmDel:false, editKey:null, cook:null};
 const store = {col:null};
 
 /* ---------- storage ---------- */
 function lsLoad(){ try { const v = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 function lsSave(){ try { localStorage.setItem(LS_KEY, JSON.stringify(state.recipes)); } catch (e) { throw new Error('storage'); } }
 function sortRecipes(){ state.recipes.sort((a, b) => (b.updated || 0) - (a.updated || 0)); }
+const LS_PANTRY = 'mise.pantry.v1', LS_PLAN = 'mise.plan.v1', PANTRY_ID = 'pantry-v1';
+function lsLoadPantry(){ try { const v = JSON.parse(localStorage.getItem(LS_PANTRY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+function lsSavePantry(){ try { localStorage.setItem(LS_PANTRY, JSON.stringify(state.pantry)); } catch (e) { throw new Error('storage'); } }
+function lsLoadPlan(){ try { const v = JSON.parse(localStorage.getItem(LS_PLAN) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch (e) { return {}; } }
+function lsSavePlan(){ try { localStorage.setItem(LS_PLAN, JSON.stringify(state.plan)); } catch (e) {} }
+function cleanItem(it){ return {id:it.id, name:it.name || '', qty:it.qty == null ? null : it.qty, unit:it.unit || '', bought:it.bought || '', useBy:it.useBy || '', example:!!it.example}; }
+async function savePantry(){
+  lsSavePantry();
+}
 function clean(r){
   return {title:r.title || '', description:r.description || '', serves:r.serves || 0, prep:r.prep || 0, cook:r.cook || 0,
     tags:r.tags || [], ingredients:r.ingredients || [], steps:r.steps || [], notes:r.notes || '',
@@ -359,15 +567,25 @@ async function removeRecipe(id){
   lsSave();
 }
 function initStore(){
-  let seeded = false;
-  try { seeded = localStorage.getItem(SEED_KEY) === '1'; } catch (e) {}
+  let seeded = false, pseeded = false;
+  try { seeded = localStorage.getItem(SEED_KEY) === '1'; pseeded = localStorage.getItem(PSEED_KEY) === '1'; } catch (e) {}
   state.recipes = lsLoad();
+  state.pantry = lsLoadPantry();
+  state.plan = lsLoadPlan();
   if (!seeded && !state.recipes.length) {
     const t = Date.now();
     state.recipes = EXAMPLES.map((x, i) => Object.assign({}, x, {example:true, fav:false, created:t - i * 1000, updated:t - i * 1000}));
     try { lsSave(); } catch (e) {}
   }
-  try { localStorage.setItem(SEED_KEY, '1'); } catch (e) {}
+  if (!pseeded && !state.pantry.length) {
+    const rel = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+    state.pantry = [
+      ['Chicken thighs', 6, '', -4, 1], ['Broccoli', 1, '', -2, 2], ['Stir fry veg', 400, 'g', -2, 2], ['Eggs', 4, '', -8, -1],
+      ['Red lentils', 500, 'g', -60, null], ['Olive oil', 500, 'ml', -30, null], ['Garlic', 2, '', -5, null], ['Onions', 3, '', -6, null]
+    ].map((x, i) => ({id:'pex' + i, name:x[0], qty:x[1], unit:x[2], bought:rel(x[3]), useBy:x[4] == null ? '' : rel(x[4]), example:true}));
+    try { lsSavePantry(); } catch (e) {}
+  }
+  try { localStorage.setItem(SEED_KEY, '1'); localStorage.setItem(PSEED_KEY, '1'); } catch (e) {}
   sortRecipes();
   state.ready = true;
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
@@ -392,22 +610,25 @@ function route(){
   const h = location.hash.replace(/^#/, ''); let m;
   if (h === 'add') return {v:'edit', id:null};
   if (h === 'backup') return {v:'backup'};
+  if (h === 'pantry') return {v:'pantry'};
+  if (h === 'plan') return {v:'plan'};
   if ((m = h.match(/^edit-(.+)$/))) return {v:'edit', id:m[1]};
   if ((m = h.match(/^r-(.+)$/))) return {v:'detail', id:m[1]};
   return {v:'list'};
 }
+const VIEWS = ['list','detail','edit','pantry','plan','backup'];
 function render(){
   const r = route();
-  $('#v-list').hidden = r.v !== 'list';
-  $('#v-detail').hidden = r.v !== 'detail';
-  $('#v-edit').hidden = r.v !== 'edit';
-  $('#v-backup').hidden = r.v !== 'backup';
+  VIEWS.forEach(v => { $('#v-' + v).hidden = r.v !== v; });
   $('#addbtn').hidden = r.v !== 'list';
+  document.querySelectorAll('.tabs a').forEach(a => {
+    if (a.dataset.tab === (r.v === 'detail' || r.v === 'edit' ? 'list' : r.v)) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  });
   if (r.v !== 'edit') state.editKey = null;
   if (r.v !== 'detail') state.servingsFor = null;
-  if (r.v === 'list') renderList(); else if (r.v === 'detail') renderDetail(r.id); else if (r.v === 'backup') renderBackup(); else renderEdit(r.id);
+  if (r.v === 'list') renderList(); else if (r.v === 'detail') renderDetail(r.id); else if (r.v === 'pantry') renderPantry(); else if (r.v === 'plan') renderPlan(); else if (r.v === 'backup') renderBackup(); else renderEdit(r.id);
   renderCook();
-  $('#foot').innerHTML = r.v === 'list' && state.ready ? 'Saved on this device. <a href="#backup">Back up or restore</a>' : '';
+  $('#foot').innerHTML = (r.v === 'list' || r.v === 'pantry' || r.v === 'plan') && state.ready ? 'Saved on this device. <a href="#backup">Back up or restore</a>' : '';
 }
 
 /* ---------- library ---------- */
@@ -418,6 +639,7 @@ function rowHtml(r){
   if (r.serves) bits.push('Serves ' + r.serves);
   const n = (r.ingredients || []).filter(l => !l.startsWith('# ')).length;
   if (n) bits.push(n + ' ingredients');
+  if (state.pantry.length) { const rs = recipeStock(r, state.pantry, todayStr()); if (rs.total) bits.push(rs.have + '/' + rs.total + ' in stock'); }
   if (r.example) bits.push('Example');
   const tags = (r.tags || []).length ? '<div class="tags">' + r.tags.map(t => '<span class="tag">' + esc(t) + '</span>').join('') + '</div>' : '';
   return '<div class="row"><a href="#r-' + esc(r.id) + '"><h3>' + esc(r.title) + '</h3><div class="meta">' + esc(bits.join(' · ')) + '</div>' + tags + '</a>' +
@@ -432,6 +654,7 @@ function renderList(){
   const tags = Object.keys(counts).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b)).slice(0, 14);
   const items = [['all', 'All']];
   if (all.some(r => r.fav)) items.push(['fav', 'Favourites']);
+  if (state.pantry.length && all.some(r => { const s = recipeStock(r, state.pantry, todayStr()); return s.total && s.have === s.total; })) items.push(['ready', 'Ready to cook']);
   tags.forEach(t => items.push(['t:' + t, t]));
   if (!items.some(i => i[0] === state.filter)) state.filter = 'all';
   chips.hidden = !all.length;
@@ -445,6 +668,7 @@ function renderList(){
   const q = state.q.trim().toLowerCase();
   const list = all.filter(r => {
     if (state.filter === 'fav' && !r.fav) return false;
+    if (state.filter === 'ready') { const s = recipeStock(r, state.pantry, todayStr()); if (!s.total || s.have !== s.total) return false; }
     if (state.filter.startsWith('t:') && !(r.tags || []).includes(state.filter.slice(2))) return false;
     if (!q) return true;
     const hay = [r.title, r.description, (r.tags || []).join(' '), (r.ingredients || []).join(' ')].join(' ').toLowerCase();
@@ -483,18 +707,30 @@ function renderDetail(id){
   const actions = state.confirmDel
     ? '<div class="actions confirm"><span>Delete this recipe?</span><button class="btn danger" type="button" data-a="delyes">Delete</button><button class="btn" type="button" data-a="delno">Keep it</button></div>'
     : '<div class="actions"><button class="btn primary" type="button" data-a="cook">Start cooking</button><a class="btn" href="#edit-' + esc(id) + '">Edit</a><button class="btn" type="button" data-a="copy">Copy</button><button class="btn danger" type="button" data-a="del">Delete</button></div>';
+  const hasStock = state.pantry.length > 0, today = todayStr();
+  let nHave = 0, nTotal = 0;
   const ings = (r.ingredients || []).map((l, i) => {
     if (l.startsWith('# ')) return '<li class="gh">' + esc(l.slice(2)) + '</li>';
     const s = splitLine(l, f), on = state.checked.has(i);
+    let tag = '';
+    if (hasStock) {
+      const p = parseIng(l);
+      if (p.key) {
+        const sf = stockFor(p, p.base == null ? null : p.base * f, state.pantry, today), lab = stockLabel(p, sf);
+        nTotal++; if (sf.st === 'ok' || sf.st === 'unk') nHave++;
+        tag = '<span class="st ' + lab.cls + '">' + esc(lab.text) + '</span>';
+      }
+    }
     return '<li><label class="ing' + (on ? ' on' : '') + '"><input type="checkbox" data-ing="' + i + '"' + (on ? ' checked' : '') + '>' +
-      (s.qty ? '<span class="q">' + esc(s.qty) + '</span><span class="t">' : '<span class="t wide">') + esc(s.rest) + '</span></label></li>';
+      (s.qty ? '<span class="q">' + esc(s.qty) + '</span><span class="t">' : '<span class="t wide">') + esc(s.rest) + '</span>' + tag + '</label></li>';
   }).join('');
+  const stockLine = hasStock && nTotal ? '<p class="hint" style="margin:0 0 10px">You have ' + nHave + ' of ' + nTotal + ' ingredients.</p>' : '';
   const steps = (r.steps || []).map((s, i) => '<li data-step="' + i + '"' + (state.done.has(i) ? ' class="done"' : '') + '><p>' + esc(s) + '</p></li>').join('');
   el.innerHTML =
     '<div class="bar"><a class="back" href="#">' + BACK + 'All recipes</a><button class="icon star" type="button" data-fav="' + esc(id) + '" aria-pressed="' + !!r.fav + '" aria-label="' + (r.fav ? 'Remove from favourites' : 'Add to favourites') + '">' + STAR + '</button></div>' +
     '<h1>' + esc(r.title) + '</h1>' + (r.description ? '<p class="desc">' + esc(r.description) + '</p>' : '') +
     (stats.length ? '<div class="stats">' + stats.join('') + '</div>' : '') + scaled + actions +
-    '<div class="grid"><section><p class="label">Ingredients</p><div class="panel">' + (ings ? '<ul class="ings">' + ings + '</ul>' : '<p class="hint">No ingredients yet.</p>') + '</div></section>' +
+    '<div class="grid"><section><p class="label">Ingredients</p>' + stockLine + '<div class="panel">' + (ings ? '<ul class="ings">' + ings + '</ul>' : '<p class="hint">No ingredients yet.</p>') + '</div></section>' +
     '<section><p class="label">Method</p>' + (steps ? '<ol class="steps">' + steps + '</ol>' : '<p class="hint">No method written yet.</p>') +
     (r.notes ? '<div class="notes">' + esc(r.notes) + '</div>' : '') + '</section></div>';
 }
@@ -533,6 +769,144 @@ $('#v-detail').addEventListener('click', async e => {
     catch (err) { toast('Could not delete that recipe.'); }
   }
 });
+/* ---------- pantry ---------- */
+function resetPantryForm(){
+  state.pantryEdit = null;
+  $('#p-name').value = ''; $('#p-qty').value = ''; $('#p-unit').value = '';
+  $('#p-bought').value = todayStr(); $('#p-useby').value = '';
+  $('#p-save').textContent = 'Add to pantry'; $('#p-cancel').hidden = true; $('#p-err').hidden = true;
+}
+function pantryAmount(it){ return it.qty == null ? 'Amount not set' : fmtQty(it.qty) + (it.unit ? ' ' + it.unit : ''); }
+function renderPantry(){
+  const el = $('#pantry-list'), sum = $('#pantry-summary'), today = todayStr();
+  if (!$('#p-bought').value && state.pantryEdit == null) $('#p-bought').value = today;
+  if (!state.ready) { sum.textContent = ''; el.innerHTML = '<p class="hint" style="margin-top:20px">Loading your pantry…</p>'; return; }
+  const items = pantrySort(state.pantry, today);
+  const bad = items.filter(it => { const u = useByState(it, today); return u && u.k === 'bad'; }).length;
+  const warn = items.filter(it => { const u = useByState(it, today); return u && u.k === 'warn'; }).length;
+  sum.className = bad ? 'err' : 'ok';
+  sum.textContent = !items.length ? '' : (bad || warn) ? [bad ? plural(bad, 'item') + ' past use-by' : '', warn ? warn + ' due soon' : ''].filter(Boolean).join(' · ') : 'Nothing is close to its use-by date.';
+  if (!items.length) {
+    el.innerHTML = '<div class="empty" style="padding:28px 0 8px"><h2>Nothing in the pantry yet</h2><p>Add what you have and when you bought it. Recipes then show what you already have and what is missing.</p></div>';
+    return;
+  }
+  const head = items.some(it => it.example)
+    ? '<div class="sumline"><span class="hint">Example items show how this works.</span><button class="btn sm" type="button" data-pe="clearex">Remove examples</button></div>' : '';
+  el.innerHTML = head + '<ul class="plist">' + items.map(it => {
+    const u = useByState(it, today), ask = state.pantryDel === it.id;
+    const meta = [pantryAmount(it), ageText(it.bought, today), it.useBy && u && u.k !== 'mute' ? 'Use by ' + fmtDate(it.useBy) : ''].filter(Boolean).join(' · ');
+    return '<li class="pi"><div><div class="pi-top"><b>' + esc(it.name) + '</b>' + (u ? '<span class="pill ' + u.k + '">' + esc(u.text) + '</span>' : '') + (it.example ? ' <span class="pill mute" style="margin-left:6px">Example</span>' : '') + '</div>' +
+      '<div class="meta">' + esc(meta) + '</div></div><div class="pi-act">' +
+      (ask ? '<button class="btn sm danger" type="button" data-pe="delyes" data-id="' + esc(it.id) + '">Remove</button><button class="btn sm" type="button" data-pe="delno">Keep</button>'
+           : '<button class="btn sm" type="button" data-pe="edit" data-id="' + esc(it.id) + '">Edit</button><button class="btn sm danger" type="button" data-pe="del" data-id="' + esc(it.id) + '">Remove</button>') +
+      '</div></li>';
+  }).join('') + '</ul>';
+}
+$('#pform').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#p-err'), fail = msg => { err.textContent = msg; err.hidden = false; };
+  err.hidden = true;
+  if (!state.ready) { fail('Still connecting. Try again in a moment.'); return; }
+  const name = $('#p-name').value.trim(), qv = $('#p-qty').value.trim();
+  const qty = qv === '' ? null : parseFloat(qv);
+  const bought = $('#p-bought').value || todayStr(), useBy = $('#p-useby').value || '';
+  if (!name) { fail('Give the item a name.'); $('#p-name').focus(); return; }
+  if (qty !== null && (isNaN(qty) || qty < 0)) { fail('Amount must be a number, or leave it blank.'); return; }
+  if (useBy && daysBetween(bought, useBy) < 0) { fail('The use-by date is before the bought date.'); return; }
+  const editing = state.pantryEdit, prev = state.pantry.map(x => Object.assign({}, x)), data = {name, qty, unit:$('#p-unit').value, bought, useBy};
+  if (editing) { const it = state.pantry.find(x => x.id === editing); if (it) Object.assign(it, data, {example:false}); }
+  else state.pantry.push(Object.assign({id:uid()}, data));
+  try { await savePantry(); } catch (e2) { state.pantry = prev; fail('Could not save. Try again.'); return; }
+  resetPantryForm(); renderPantry(); toast(editing ? 'Saved' : 'Added to pantry');
+});
+$('#p-cancel').addEventListener('click', resetPantryForm);
+$('#pantry-list').addEventListener('click', async e => {
+  const b = e.target.closest('[data-pe]');
+  if (!b) return;
+  const a = b.dataset.pe, id = b.dataset.id;
+  if (a === 'edit') {
+    const it = state.pantry.find(x => x.id === id);
+    if (!it) return;
+    state.pantryEdit = id;
+    $('#p-name').value = it.name; $('#p-qty').value = it.qty == null ? '' : it.qty; $('#p-unit').value = it.unit || '';
+    $('#p-bought').value = it.bought || ''; $('#p-useby').value = it.useBy || '';
+    $('#p-save').textContent = 'Save changes'; $('#p-cancel').hidden = false; $('#p-err').hidden = true;
+    $('#p-name').scrollIntoView({behavior:'smooth', block:'center'});
+  } else if (a === 'del') { state.pantryDel = id; renderPantry(); }
+  else if (a === 'delno') { state.pantryDel = null; renderPantry(); }
+  else if (a === 'delyes' || a === 'clearex') {
+    const prev = state.pantry.slice();
+    state.pantry = state.pantry.filter(x => a === 'clearex' ? !x.example : x.id !== id);
+    state.pantryDel = null;
+    if (state.pantryEdit && !state.pantry.some(x => x.id === state.pantryEdit)) resetPantryForm();
+    try { await savePantry(); toast(a === 'clearex' ? 'Examples removed' : 'Removed'); }
+    catch (err) { state.pantry = prev; toast('Could not remove that.'); }
+    renderPantry();
+  }
+});
+
+/* ---------- plan ---------- */
+function needRow(e){
+  const s = e.s;
+  let status, cls;
+  if (s.st === 'ok') { status = 'In stock'; cls = 'good'; }
+  else if (s.st === 'unk') { status = 'Check'; cls = 'warn'; }
+  else if (s.st === 'short') { status = 'Buy ' + fmtAmount(s.short, e.fam, e.unit); cls = 'bad'; }
+  else { status = e.base != null ? 'Buy ' + fmtAmount(e.base, e.fam, e.unit) : 'Buy'; cls = 'bad'; }
+  const need = e.base != null ? 'Need ' + fmtAmount(e.base, e.fam, e.unit) : 'To taste';
+  const have = s.st === 'none' ? 'have none' : s.st === 'expired' ? 'past use-by' : s.have != null ? 'have ' + fmtAmount(s.have, e.fam, e.unit) : s.st === 'unk' ? 'have some, amount unclear' : 'have it';
+  return '<li class="need"><b>' + esc(e.name) + '</b><span class="pill ' + cls + '">' + esc(status) + '</span><div class="meta">' + esc(need + ' · ' + have + ' · ' + e.recipes.join(', ')) + '</div></li>';
+}
+function renderPlan(){
+  const el = $('#v-plan');
+  if (!state.ready) { el.innerHTML = '<h1>Plan</h1><p class="desc">Loading…</p>'; return; }
+  if (!state.recipes.length) { el.innerHTML = '<h1>Plan</h1><div class="empty"><h2>No recipes to plan with</h2><p>Add a recipe first, then pick it here.</p><a class="btn primary" href="#add">Add a recipe</a></div>'; return; }
+  const today = todayStr();
+  Object.keys(state.plan).forEach(id => { if (!state.recipes.some(r => r.id === id)) delete state.plan[id]; });
+  const picks = state.recipes.map(r => {
+    const n = state.plan[r.id], id = esc(r.id);
+    return '<li class="pick"><label><input type="checkbox" data-pick="' + id + '"' + (n ? ' checked' : '') + '><span>' + esc(r.title) + '</span></label>' +
+      (n ? '<div class="sv"><div class="stepper"><button type="button" data-pd="-1" data-id="' + id + '" aria-label="Fewer">−</button><output>' + n + '</output><button type="button" data-pd="1" data-id="' + id + '" aria-label="More">+</button></div>' +
+        '<button class="btn sm" type="button" data-pd="x2" data-id="' + id + '" aria-label="Double it">×2</button></div>' : '') + '</li>';
+  }).join('');
+  const entries = aggregatePlan(state.recipes, state.plan);
+  entries.forEach(e => { e.s = stockFor(e, e.base, state.pantry, today); });
+  const buy = entries.filter(e => e.s.st === 'none' || e.s.st === 'expired' || e.s.st === 'short');
+  const check = entries.filter(e => e.s.st === 'unk'), have = entries.filter(e => e.s.st === 'ok');
+  state.planBuy = buy;
+  const sec = (t, n, extra) => '<div class="sec"><p class="label" style="margin:0">' + t + ' (' + n + ')</p>' + (extra || '') + '</div>';
+  let out = '<h1>Plan</h1><p class="desc">Tick what you are cooking and set the servings. You get the combined ingredients, what you already have, and what to buy. Recipes with no serving count are counted in batches.</p>' +
+    '<p class="label" style="margin:22px 0 0">Cooking</p><ul class="plist" style="margin-top:4px">' + picks + '</ul>';
+  if (!entries.length) out += '<p class="hint" style="margin-top:20px">Tick one or more recipes to see what you need.</p>';
+  else {
+    out += sec('To buy', buy.length, buy.length ? '<button class="btn sm" type="button" data-plan="copy">Copy list</button>' : '');
+    out += buy.length ? '<ul class="plist">' + buy.map(needRow).join('') + '</ul>' : '<p class="hint">You already have everything.</p>';
+    if (check.length) out += sec('Check you have enough', check.length) + '<ul class="plist">' + check.map(needRow).join('') + '</ul>';
+    if (have.length) out += sec('Already in stock', have.length) + '<ul class="plist">' + have.map(needRow).join('') + '</ul>';
+  }
+  el.innerHTML = out;
+}
+$('#v-plan').addEventListener('change', e => {
+  const c = e.target.closest('[data-pick]');
+  if (!c) return;
+  const r = state.recipes.find(x => x.id === c.dataset.pick);
+  if (!r) return;
+  if (c.checked) state.plan[r.id] = r.serves || 1; else delete state.plan[r.id];
+  lsSavePlan(); renderPlan();
+});
+$('#v-plan').addEventListener('click', async e => {
+  const d = e.target.closest('[data-pd]');
+  if (d) {
+    const id = d.dataset.id, cur = state.plan[id] || 1, a = d.dataset.pd;
+    state.plan[id] = Math.min(999, a === 'x2' ? cur * 2 : Math.max(1, cur + (+a)));
+    lsSavePlan(); renderPlan(); return;
+  }
+  if (e.target.closest('[data-plan="copy"]')) {
+    const text = 'Shopping list\n' + state.planBuy.map(x => '- ' + planBuyLine(x)).join('\n');
+    toast((await copyText(text)) ? 'List copied' : 'Could not copy');
+  }
+});
+
 /* ---------- add / edit ---------- */
 function renderEdit(id){
   const key = id || 'new';
@@ -615,13 +989,13 @@ $('#v-edit').addEventListener('submit', e => { e.preventDefault(); saveForm(); }
 
 /* ---------- backup ---------- */
 function backupJson(){
-  return JSON.stringify({app:'mise', version:1, exported:new Date().toISOString(), recipes:state.recipes.map(r => Object.assign({id:r.id}, clean(r)))}, null, 1);
+  return JSON.stringify({app:'mise', version:1, exported:new Date().toISOString(), recipes:state.recipes.map(r => Object.assign({id:r.id}, clean(r))), pantry:state.pantry.map(cleanItem)}, null, 1);
 }
 function renderBackup(){
   const n = state.recipes.length;
   $('#v-backup').innerHTML =
     '<div class="bar"><a class="back" href="#">' + BACK + 'All recipes</a></div><h1>Backup</h1>' +
-    '<p class="desc">Your recipes live only on this device. Copy a backup now and then and keep it somewhere safe, like Notes.</p>' +
+    '<p class="desc">Your recipes and pantry live only on this device. Copy a backup now and then and keep it somewhere safe, like Notes.</p>' +
     '<div class="actions" style="margin-top:20px"><button class="btn primary" type="button" data-b="copy">Copy backup (' + n + (n === 1 ? ' recipe' : ' recipes') + ')</button>' +
     (navigator.share ? '<button class="btn" type="button" data-b="share">Share\u2026</button>' : '') + '</div>' +
     '<p class="label" style="margin-top:28px">Restore</p><p class="hint" style="margin-bottom:10px">Paste a backup below. Recipes with the same id are replaced and the rest are added.</p>' +
@@ -646,8 +1020,13 @@ $('#v-backup').addEventListener('click', async e => {
       const i = state.recipes.findIndex(x => x.id === rec.id);
       if (i >= 0) state.recipes[i] = rec; else state.recipes.push(rec);
     });
+    if (Array.isArray(data.pantry)) data.pantry.filter(x => x && x.name).forEach(x => {
+      const it = Object.assign(cleanItem(x), {id:String(x.id || uid()).replace(/[^A-Za-z0-9_-]/g, '') || uid()});
+      const i = state.pantry.findIndex(y => y.id === it.id);
+      if (i >= 0) state.pantry[i] = it; else state.pantry.push(it);
+    });
     sortRecipes();
-    try { lsSave(); } catch (err) { note.className = 'err'; note.textContent = 'Could not save. Your browser may be blocking storage.'; return; }
+    try { lsSave(); lsSavePantry(); } catch (err) { note.className = 'err'; note.textContent = 'Could not save. Your browser may be blocking storage.'; return; }
     note.className = 'ok';
     note.textContent = 'Restored ' + list.length + (list.length === 1 ? ' recipe.' : ' recipes.');
     $('#restore').value = '';
