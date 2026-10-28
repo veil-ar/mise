@@ -1,7 +1,7 @@
 // Mise service worker: makes the app open offline.
 // Pages and icons are served from cache and refreshed in the background, so an
 // update shows up the second time you open the app after it is published.
-const CACHE = 'mise-v2';
+const CACHE = 'mise-v3';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

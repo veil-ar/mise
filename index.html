@@ -150,6 +150,7 @@ form{max-width:640px}
 .cook-nav{display:grid;grid-template-columns:1fr 2fr;gap:12px}
 .cook-nav .btn{min-height:56px;font-size:1.05rem}
 .toast{position:fixed;left:50%;translate:-50% 0;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;max-width:calc(100% - 32px)}
+.bulk{margin-top:14px}.bulk summary{cursor:pointer;font-weight:600;padding:2px 0}
 .tabs{flex-basis:100%;display:flex;gap:26px}
 .tabs a{padding:10px 0 9px;margin-bottom:-1px;text-decoration:none;color:var(--muted);font-weight:500;border-bottom:2px solid transparent}
 .tabs a:hover{color:var(--ink)}
@@ -229,6 +230,13 @@ select.f{min-height:48px}
         <p class="err" id="p-err" role="alert" hidden></p>
         <div class="actions" style="margin:0"><button class="btn primary" type="submit" id="p-save">Add to pantry</button><button class="btn" type="button" id="p-cancel" hidden>Cancel</button></div>
       </form>
+      <details class="panel bulk" id="p-bulkbox">
+        <summary>Add many at once</summary>
+        <p class="hint" style="margin:10px 0">One item per line. Amount can go before or after the name. Optional dates after a semicolon.</p>
+        <textarea class="f" id="p-bulk" rows="7" aria-label="Pantry items, one per line" placeholder="Chicken thighs 775 g; bought 25 Oct; use by 30 Oct&#10;Rice 10 kg&#10;Eggs 30&#10;Salt"></textarea>
+        <p class="err" id="p-bulk-note" role="status" hidden></p>
+        <div class="actions" style="margin:12px 0 0"><button class="btn primary" type="button" id="p-bulk-go">Add all</button></div>
+      </details>
       <div id="pantry-list"></div>
     </section>
     <section class="view" id="v-plan" hidden></section>
@@ -523,6 +531,54 @@ function planBuyLine(e){
   if (s.st === 'short') amt = fmtAmount(s.short, e.fam, e.unit);
   else if (e.base != null) amt = fmtAmount(e.base, e.fam, e.unit);
   return (amt ? amt + ' ' : '') + e.name;
+}
+
+const P_UNITS = ['g','kg','ml','l','tsp','tbsp','cup','oz','lb'];
+const MON3 = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+function isoDate(y, m, d){ const dt = new Date(y, m, d); return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'); }
+function parseLooseDate(str, today){
+  const t = String(str || '').trim().toLowerCase().replace(/\bth\b|(?<=\d)(st|nd|rd|th)\b/g, '');
+  if (!t) return '';
+  const ty = +today.slice(0, 4), tm = +today.slice(5, 7) - 1, td = +today.slice(8, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+  if (t === 'today') return today;
+  if (t === 'yesterday') return isoDate(ty, tm, td - 1);
+  let m = t.match(/^(\d{1,2})\s*(?:of\s+)?([a-z]{3})[a-z]*(?:\s+(\d{4}))?$/);
+  if (m && MON3.indexOf(m[2]) >= 0) return isoDate(m[3] ? +m[3] : ty, MON3.indexOf(m[2]), +m[1]);
+  m = t.match(/^(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?$/);
+  if (m) { const y = m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : ty; return isoDate(y, +m[2] - 1, +m[1]); }
+  return null;
+}
+function parsePantryText(text, today){
+  const items = [], bad = [];
+  String(text || '').split(/\r?\n/).forEach(raw => {
+    let line = raw.replace(/^\s*(?:[-*•]|\d+[.)])\s+/, '').trim();
+    if (!line || /^#/.test(line)) return;
+    const parts = line.split(/\s*[;|]\s*/);
+    let head = parts.shift(), bought = today, useBy = '', ok = true;
+    parts.forEach(pt => {
+      let m = pt.match(/^(?:use[\s-]*by|exp(?:ires?)?|best before|bb)\s*:?\s*(.+)$/i);
+      if (m) { const d = parseLooseDate(m[1], today); if (d === null) ok = false; else useBy = d; return; }
+      m = pt.match(/^(?:bought|purchased|b)\s*:?\s*(.+)$/i);
+      if (m) { const d = parseLooseDate(m[1], today); if (d === null) ok = false; else bought = d || today; return; }
+      ok = false;
+    });
+    if (!ok) { bad.push(raw.trim()); return; }
+    head = head.replace(/\s+/g, ' ').trim();
+    let qty = null, unit = '', name = head;
+    const lead = parseIng(head);
+    if (lead.qty !== null && lead.name) {
+      qty = lead.qty; unit = P_UNITS.indexOf(lead.unit) >= 0 ? lead.unit : ''; name = lead.name;
+    } else {
+      const tm = head.match(new RegExp('^(.*?)[\\s,:-]+(?:x\\s*)?(\\d+(?:\\.\\d+)?)\\s*(' + P_UNITS.join('|') + ')?$', 'i'));
+      if (tm && tm[1].trim()) { name = tm[1].trim(); qty = parseFloat(tm[2]); unit = (tm[3] || '').toLowerCase(); }
+    }
+    name = name.replace(/^[,:\s-]+|[,:\s-]+$/g, '');
+    if (!name) { bad.push(raw.trim()); return; }
+    name = name.charAt(0).toUpperCase() + name.slice(1);
+    items.push({name, qty, unit, bought, useBy});
+  });
+  return {items, bad};
 }
 /* LOGIC END */
 const $ = s => document.querySelector(s);
@@ -819,6 +875,24 @@ $('#pform').addEventListener('submit', async e => {
   try { await savePantry(); } catch (e2) { state.pantry = prev; fail('Could not save. Try again.'); return; }
   resetPantryForm(); renderPantry(); toast(editing ? 'Saved' : 'Added to pantry');
 });
+$('#p-bulk-go').addEventListener('click', async () => {
+  const note = $('#p-bulk-note'), show = (msg, ok) => { note.className = ok ? 'ok' : 'err'; note.textContent = msg; note.hidden = false; };
+  if (!state.ready) { show('Still connecting. Try again in a moment.'); return; }
+  const r = parsePantryText($('#p-bulk').value, todayStr());
+  if (!r.items.length) { show(r.bad.length ? 'Could not read: ' + r.bad.join(' | ') : 'Nothing to add.'); return; }
+  const prev = state.pantry.map(x => Object.assign({}, x));
+  let added = 0, updated = 0;
+  r.items.forEach(it => {
+    const key = nameTokens(it.name).join(' ');
+    const ex = state.pantry.find(x => nameTokens(x.name).join(' ') === key && !x.example);
+    if (ex) { Object.assign(ex, it, {example:false}); updated++; }
+    else { state.pantry.push(Object.assign({id:uid()}, it, {example:false})); added++; }
+  });
+  try { await savePantry(); } catch (e) { state.pantry = prev; show('Could not save. Try again.'); return; }
+  $('#p-bulk').value = '';
+  show('Added ' + added + (updated ? ', updated ' + updated : '') + (r.bad.length ? '. Skipped: ' + r.bad.join(' | ') : '.'), !r.bad.length);
+  renderPantry();
+});
 $('#p-cancel').addEventListener('click', resetPantryForm);
 $('#pantry-list').addEventListener('click', async e => {
   const b = e.target.closest('[data-pe]');
@@ -998,9 +1072,9 @@ function renderBackup(){
     '<p class="desc">Your recipes and pantry live only on this device. Copy a backup now and then and keep it somewhere safe, like Notes.</p>' +
     '<div class="actions" style="margin-top:20px"><button class="btn primary" type="button" data-b="copy">Copy backup (' + n + (n === 1 ? ' recipe' : ' recipes') + ')</button>' +
     (navigator.share ? '<button class="btn" type="button" data-b="share">Share\u2026</button>' : '') + '</div>' +
-    '<p class="label" style="margin-top:28px">Restore</p><p class="hint" style="margin-bottom:10px">Paste a backup below. Recipes with the same id are replaced and the rest are added.</p>' +
+    '<p class="label" style="margin-top:28px">Restore</p><p class="hint" style="margin-bottom:10px">Paste a backup below. Recipes and pantry items with the same id are replaced and the rest are added.</p>' +
     '<textarea class="f" id="restore" rows="6" aria-label="Backup text to restore" placeholder="Paste a backup here"></textarea>' +
-    '<div class="actions" style="margin-top:12px"><button class="btn" type="button" data-b="restore">Restore recipes</button></div><p class="ok" id="restorenote" role="status" hidden></p>';
+    '<div class="actions" style="margin-top:12px"><button class="btn" type="button" data-b="restore">Restore</button></div><p class="ok" id="restorenote" role="status" hidden></p>';
 }
 $('#v-backup').addEventListener('click', async e => {
   const b = e.target.closest('[data-b]');
@@ -1013,14 +1087,15 @@ $('#v-backup').addEventListener('click', async e => {
     note.hidden = false;
     let data;
     try { data = JSON.parse($('#restore').value); } catch (err) { note.className = 'err'; note.textContent = 'That is not a Mise backup.'; return; }
-    const list = data && data.app === 'mise' && Array.isArray(data.recipes) ? data.recipes.filter(r => r && r.title && String(r.id || '').replace(/[^A-Za-z0-9_-]/g, '')) : null;
-    if (!list || !list.length) { note.className = 'err'; note.textContent = 'No recipes found in that text.'; return; }
+    const list = data && data.app === 'mise' ? (Array.isArray(data.recipes) ? data.recipes.filter(r => r && r.title && String(r.id || '').replace(/[^A-Za-z0-9_-]/g, '')) : []) : null;
+    const plist = data && data.app === 'mise' && Array.isArray(data.pantry) ? data.pantry.filter(x => x && x.name) : [];
+    if (!list || (!list.length && !plist.length)) { note.className = 'err'; note.textContent = 'Nothing to restore in that text.'; return; }
     list.forEach(r => {
       const rec = Object.assign({id:String(r.id).replace(/[^A-Za-z0-9_-]/g, '')}, clean(r));
       const i = state.recipes.findIndex(x => x.id === rec.id);
       if (i >= 0) state.recipes[i] = rec; else state.recipes.push(rec);
     });
-    if (Array.isArray(data.pantry)) data.pantry.filter(x => x && x.name).forEach(x => {
+    plist.forEach(x => {
       const it = Object.assign(cleanItem(x), {id:String(x.id || uid()).replace(/[^A-Za-z0-9_-]/g, '') || uid()});
       const i = state.pantry.findIndex(y => y.id === it.id);
       if (i >= 0) state.pantry[i] = it; else state.pantry.push(it);
@@ -1028,7 +1103,7 @@ $('#v-backup').addEventListener('click', async e => {
     sortRecipes();
     try { lsSave(); lsSavePantry(); } catch (err) { note.className = 'err'; note.textContent = 'Could not save. Your browser may be blocking storage.'; return; }
     note.className = 'ok';
-    note.textContent = 'Restored ' + list.length + (list.length === 1 ? ' recipe.' : ' recipes.');
+    note.textContent = 'Restored ' + [list.length ? list.length + (list.length === 1 ? ' recipe' : ' recipes') : '', plist.length ? plist.length + (plist.length === 1 ? ' pantry item' : ' pantry items') : ''].filter(Boolean).join(' and ') + '.';
     $('#restore').value = '';
   }
 });
